@@ -22,12 +22,25 @@ class PostControllerTest {
     @DisplayName("/posts 요청시 Hello World를 출력한다.")
     void test() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/posts")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("title", "글 제목입니다.")
-                        .param("content", "글 내용입니다.")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": \"제목입니다.\", \"content\": \"내용입니다.\"}")
                 )
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("Hello World"))
+                .andExpect(MockMvcResultMatchers.content().string("{}"))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @DisplayName("/posts 요청시 title값은 필수다.")
+    void test2() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": null, \"content\": \"내용입니다.\"}")
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("400"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("잘못된 요청입니다."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.validation.title").value("타이틀을 입력해주세요."))
                 .andDo(MockMvcResultHandlers.print());
     }
 }
