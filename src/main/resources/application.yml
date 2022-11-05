@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/test
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true  # 웹 요청이 왔을때 페이지를 1부터 시작하게 해준다. 원래는 0임. test같은 직접 실행을 하면 안먹히므로 첫페이지를 0으로 두고 테스트 해야함.
+        default-page-size: 5  # 페이지를 불러온는 페이지 갯수를 설정할 수 있다. 기본값은 20이다.
+
+#  jpa:
+#    hibernate:
+#      ddl-auto: create
+#    properties:
+#      hibernate:
+#        #      show_sql: true
+#        format_sql: true
+#
+#logging.level:
+#  org.hibernate.SQL: debug

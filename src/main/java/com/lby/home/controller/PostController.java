@@ -1,16 +1,15 @@
 package com.lby.home.controller;
 
 import com.lby.home.request.PostCreate;
+import com.lby.home.response.PostResponse;
 import com.lby.home.service.PostService;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -22,5 +21,16 @@ public class PostController {
     @PostMapping("/posts")
     public void posts(@RequestBody @Valid PostCreate request) throws Exception {
         postService.write(request);
+    }
+
+    @GetMapping("/posts/{postId}")
+    public PostResponse get(@PathVariable Long postId) {
+        return postService.get(postId);
+    }
+
+    @GetMapping("/posts")
+    public List<PostResponse> getList(Pageable pageable) {
+        // @PageableDefault = get파라미터로 페이지번호가 넘어왔을때 보정 처리를 해준다. 예를 들면 get으로 페이지 1로 들어오면 0으로 처리해준다.
+        return postService.getList(pageable);
     }
 }

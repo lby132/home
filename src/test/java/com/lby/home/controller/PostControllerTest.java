@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lby.home.domain.Post;
 import com.lby.home.repository.PostRepository;
 import com.lby.home.request.PostCreate;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,7 +18,11 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 // Controller layer만 테스트를 하면 @WebMvcTest만 써주면 되는데
@@ -116,5 +120,59 @@ class PostControllerTest {
         final Post post = postRepository.findAll().get(0);
         assertEquals("제목입니다.", post.getTitle());
         assertEquals("내용입니다.", post.getContent());
+    }
+
+    @Test
+    @DisplayName("글 1개 조회")
+    void test4() throws Exception {
+        final Post post = Post.builder()
+                .title("1234567890")
+                .content("bar")
+                .build();
+        postRepository.save(post);
+
+        // excepted
+        mockMvc.perform(MockMvcRequestBuilders.get("/posts/{postId}", post.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(post.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("1234567890"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content").value("bar"))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @DisplayName("글 여러개 조회")
+    void test5() throws Exception {
+        // given
+        List<Post> requestPosts = IntStream.range(1, 31)
+                .mapToObj(i -> Post.builder()
+                        .title("lby - 제목" + i)
+                        .content("가산 - " + i)
+                        .build())
+                        .collect(Collectors.toList());
+        postRepository.saveAll(requestPosts);
+
+        // excepted
+        mockMvc.perform(MockMvcRequestBuilders.get("/posts?page=1&sort=id,desc&size=10")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.is(5)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(30))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value("lby - 제목 30"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].content").value("가산 - 30"))
+                .andDo(MockMvcResultHandlers.print());
+
+//        mockMvc.perform(MockMvcRequestBuilders.get("/posts")
+//                        .contentType(MediaType.APPLICATION_JSON))
+//                .andExpect(MockMvcResultMatchers.status().isOk())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.is(2)))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(post1.getId()))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value("title_1"))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].content").value("content_1"))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value(post2.getId()))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[1].title").value("title_2"))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[1].content").value("content_2"))
+//                .andDo(MockMvcResultHandlers.print());
     }
 }
