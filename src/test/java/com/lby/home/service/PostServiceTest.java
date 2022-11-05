@@ -3,16 +3,16 @@ package com.lby.home.service;
 import com.lby.home.domain.Post;
 import com.lby.home.repository.PostRepository;
 import com.lby.home.request.PostCreate;
+import com.lby.home.request.PostEdit;
+import com.lby.home.request.PostSearch;
 import com.lby.home.response.PostResponse;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,22 +71,78 @@ public class PostServiceTest {
     }
 
     @Test
-    @DisplayName("글 1페이지 조회")
+    @DisplayName("글 여러개 조회")
     void test3() {
-        List<Post> requestPosts = IntStream.range(1, 31)
+        List<Post> requestPosts = IntStream.range(0, 20)
                 .mapToObj(i -> Post.builder()
-                        .title("lby 제목 - " + i)
-                        .content("가산 - " + i)
+                        .title("foo" + i)
+                        .content("bar1" + i)
                         .build())
                 .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
-        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
+       // Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
 
-        final List<PostResponse> posts = postService.getList(pageable);
+        PostSearch postSearch = PostSearch.builder()
+                .page(1)
+                .size(10)
+                .build();
 
-        assertEquals(5L, posts.size());
-        assertEquals("lby 제목 - 30", posts.get(0).getTitle());
-        assertEquals("가산 - 26", posts.get(4).getContent());
+        final List<PostResponse> posts = postService.getList(postSearch);
+
+        assertEquals(10L, posts.size());
+        assertEquals("foo19", posts.get(0).getTitle());
+    }
+
+    @Test
+    @DisplayName("글 제목 수정")
+    void test4() {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        final PostEdit postEdit = PostEdit.builder()
+                .title("ybl")
+                .content("가산")
+                .build();
+
+        // when
+        postService.edit(post.getId(), postEdit);
+
+        // then
+        final Post changedPost = postRepository.findById(post.getId())
+                .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다. id=" + post.getId()));
+        Assertions.assertEquals("ybl", changedPost.getTitle());
+        Assertions.assertEquals("가산", changedPost.getContent());
+
+    }
+
+    @Test
+    @DisplayName("글 내용 수정")
+    void test5() {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        final PostEdit postEdit = PostEdit.builder()
+                .title("lby")
+                .content("구로")
+                .build();
+
+        // when
+        postService.edit(post.getId(), postEdit);
+
+        // then
+        final Post changedPost = postRepository.findById(post.getId())
+                .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다. id=" + post.getId()));
+        Assertions.assertEquals("lby", changedPost.getTitle());
+        Assertions.assertEquals("구로", changedPost.getContent());
+
     }
 }

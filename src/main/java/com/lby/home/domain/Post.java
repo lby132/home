@@ -5,7 +5,6 @@ import lombok.*;
 import javax.persistence.*;
 
 @Getter
-@Setter
 @Entity
 @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public class Post {
@@ -25,4 +24,14 @@ public class Post {
         this.content = content;
     }
 
+    public PostEditor.PostEditorBuilder toEditor() {
+        return PostEditor.builder()
+                .title(title)
+                .content(content);
+    }
+
+    public void edit(PostEditor postEditor) {
+        title = postEditor.getTitle();
+        content = postEditor.getContent();
+    }
 }

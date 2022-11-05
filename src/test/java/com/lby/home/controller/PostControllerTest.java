@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lby.home.domain.Post;
 import com.lby.home.repository.PostRepository;
 import com.lby.home.request.PostCreate;
+import com.lby.home.request.PostEdit;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -123,7 +124,7 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 1개 조회")
+    @DisplayName("")
     void test4() throws Exception {
         final Post post = Post.builder()
                 .title("1234567890")
@@ -142,37 +143,49 @@ class PostControllerTest {
     }
 
     @Test
-    @DisplayName("글 여러개 조회")
+    @DisplayName("페이지를 0으로 요청하면 첫 페이지를 가져온다")
     void test5() throws Exception {
         // given
-        List<Post> requestPosts = IntStream.range(1, 31)
+        List<Post> requestPosts = IntStream.range(0, 20)
                 .mapToObj(i -> Post.builder()
-                        .title("lby - 제목" + i)
-                        .content("가산 - " + i)
+                        .title("foo" + i)
+                        .content("bar" + i)
                         .build())
                         .collect(Collectors.toList());
         postRepository.saveAll(requestPosts);
 
         // excepted
-        mockMvc.perform(MockMvcRequestBuilders.get("/posts?page=1&sort=id,desc&size=10")
+        mockMvc.perform(MockMvcRequestBuilders.get("/posts?page=0&size=10")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.is(5)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(30))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value("lby - 제목 30"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].content").value("가산 - 30"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.is(10)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value("foo19"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].content").value("bar19"))
                 .andDo(MockMvcResultHandlers.print());
 
-//        mockMvc.perform(MockMvcRequestBuilders.get("/posts")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(MockMvcResultMatchers.status().isOk())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.length()", Matchers.is(2)))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id").value(post1.getId()))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value("title_1"))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$[0].content").value("content_1"))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id").value(post2.getId()))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$[1].title").value("title_2"))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$[1].content").value("content_2"))
-//                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @DisplayName("글 제목 수정")
+    void test6() throws Exception {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        final PostEdit postEdit = PostEdit.builder()
+                .title("lby2")
+                .content("구로")
+                .build();
+
+        // excepted
+        mockMvc.perform(MockMvcRequestBuilders.patch("/posts/{postId}", post.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postEdit)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+
     }
 }
