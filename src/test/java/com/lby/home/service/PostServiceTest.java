@@ -209,7 +209,7 @@ public class PostServiceTest {
                 .title("lby")
                 .content("구로")
                 .build();
-        System.out.println("postEdit = " + postEdit);
+        System.out.println("postEdit!@# = " + postEdit);
         // expected
         assertThrows(PostNotFound.class, () -> {
             postService.edit(post.getId() + 1L, postEdit);
