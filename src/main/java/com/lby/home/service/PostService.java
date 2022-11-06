@@ -2,6 +2,7 @@ package com.lby.home.service;
 
 import com.lby.home.domain.Post;
 import com.lby.home.domain.PostEditor;
+import com.lby.home.exception.PostNotFound;
 import com.lby.home.repository.PostRepository;
 import com.lby.home.request.PostCreate;
 import com.lby.home.request.PostEdit;
@@ -34,7 +35,8 @@ public class PostService {
 
     public PostResponse get(Long id) {
         final Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
+                .orElseThrow(() -> new PostNotFound());
+                //.orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
 
         return PostResponse.builder()
                 .id(post.getId())
@@ -52,7 +54,7 @@ public class PostService {
     @Transactional
     public void edit(Long id, PostEdit postEdit) {
         final Post post = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 글입니다."));
+                .orElseThrow(PostNotFound::new);
 
         final PostEditor.PostEditorBuilder postEditorBuilder = post.toEditor();
 
@@ -63,5 +65,11 @@ public class PostService {
 
         post.edit(postEditor);
 
+    }
+
+    public void delete(Long id) {
+        final Post post = postRepository.findById(id)
+                .orElseThrow(PostNotFound::new);
+        postRepository.delete(post);
     }
 }

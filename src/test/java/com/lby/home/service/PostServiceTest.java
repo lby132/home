@@ -1,6 +1,7 @@
 package com.lby.home.service;
 
 import com.lby.home.domain.Post;
+import com.lby.home.exception.PostNotFound;
 import com.lby.home.repository.PostRepository;
 import com.lby.home.request.PostCreate;
 import com.lby.home.request.PostEdit;
@@ -18,8 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -143,6 +143,77 @@ public class PostServiceTest {
                 .orElseThrow(() -> new RuntimeException("글이 존재하지 않습니다. id=" + post.getId()));
         Assertions.assertEquals("lby", changedPost.getTitle());
         Assertions.assertEquals("구로", changedPost.getContent());
+
+    }
+
+    @Test
+    @DisplayName("게시글 삭제")
+    void test6() {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        // when
+        postService.delete(post.getId());
+
+        // then
+        Assertions.assertEquals(0, postRepository.count());
+    }
+
+    @Test
+    @DisplayName("글 1개 조회 - 존재하지 않는 글")
+    void test7() {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        // expected
+        assertThrows(PostNotFound.class, () -> {
+            postService.get(post.getId() + 1L);
+        });
+    }
+
+    @Test
+    @DisplayName("게시글 삭제 - 존재하지 않는 글")
+    void test8() {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        // expected
+        assertThrows(PostNotFound.class, () -> {
+            postService.delete(post.getId() + 1L);
+        });
+    }
+
+    @Test
+    @DisplayName("글 내용 수정 - 존재하지 않는 글")
+    void test9() {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        final PostEdit postEdit = PostEdit.builder()
+                .title("lby")
+                .content("구로")
+                .build();
+
+        // expected
+        assertThrows(PostNotFound.class, () -> {
+            postService.edit(post.getId() + 1L, postEdit);
+        });
 
     }
 }

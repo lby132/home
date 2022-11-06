@@ -76,26 +76,26 @@ class PostControllerTest {
                 .andDo(MockMvcResultHandlers.print()); // 요청/응답 전체 메세지를 확인할수 있다.
     }	             // 참고로 MockMvcResultHandlers나 이런것들 static import가능해서 더 깔끔하게 쓸수있다. 공부용이라 그냥 남겨뒀다.
 
-    @Test
-    @DisplayName("/posts 요청시 title값은 필수다.")
-    void test2() throws Exception {
-
-        final PostCreate request = PostCreate.builder()
-                .content("내용입니다.")
-                .build();
-
-        final String json = objectMapper.writeValueAsString(request);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/posts")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                )
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("400"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.validation.title").value("타이틀을 입력해주세요."))
-                .andDo(MockMvcResultHandlers.print());
-    }
+//    @Test
+//    @DisplayName("/posts 요청시 title값은 필수다.")
+//    void test2() throws Exception {
+//
+//        final PostCreate request = PostCreate.builder()
+//                .content("내용입니다.")
+//                .build();
+//
+//        final String json = objectMapper.writeValueAsString(request);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.post("/posts")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(json)
+//                )
+//                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("400"))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("잘못된 요청입니다."))
+//                .andExpect(MockMvcResultMatchers.jsonPath("$.validation.title").value("타이틀을 입력해주세요."))
+//                .andDo(MockMvcResultHandlers.print());
+//    }
 
     @Test
     @DisplayName("/posts 요청시 DB에 값이 저장된다.")
@@ -188,4 +188,70 @@ class PostControllerTest {
                 .andDo(MockMvcResultHandlers.print());
 
     }
+
+    @Test
+    @DisplayName("게시글 삭제")
+    void test7() throws Exception {
+        // given
+        final Post post = Post.builder()
+                .title("lby")
+                .content("가산")
+                .build();
+        postRepository.save(post);
+
+        // excepted
+        mockMvc.perform(MockMvcRequestBuilders.delete("/posts/{postId}", post.getId())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 조회")
+    void test9() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.delete("/posts/{postId}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 수정")
+    void test10() throws Exception {
+
+        PostEdit postEdit = PostEdit.builder()
+                .title("lby2")
+                .content("구로")
+                .build();
+
+        // excepted
+        mockMvc.perform(MockMvcRequestBuilders.patch("/posts/{postId}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postEdit)))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andDo(MockMvcResultHandlers.print());
+
+    }
+
+    @Test
+    @DisplayName("게시글 작성시 제목에 '바보'는 포함될 수 없다.")
+    void test11() throws Exception {
+
+        final PostCreate request = PostCreate.builder()
+                .title("나는 바보입니다.")
+                .content("내용입니다.")
+                .build();
+
+        final String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/posts")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json)
+                        //   .content("{\"title\": \"제목입니다.\", \"content\": \"내용입니다.\"}")
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andDo(MockMvcResultHandlers.print());
+    }
+
 }

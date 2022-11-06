@@ -1,8 +1,10 @@
 package com.lby.home.controller;
 
+import com.lby.home.exception.LbyException;
 import com.lby.home.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,4 +35,20 @@ public class ExceptionController {
         return response;
     }
 
+    @ResponseBody
+    @ExceptionHandler(LbyException.class)
+    public ResponseEntity<ErrorResponse> lbyException(LbyException e) {
+        final int statusCode = e.getStatusCode();
+
+        final ErrorResponse body = ErrorResponse.builder()
+                .code(String.valueOf(statusCode))
+                .message(e.getMessage())
+                .validation(e.getValidation())
+                .build();
+
+        final ResponseEntity<ErrorResponse> response = ResponseEntity.status(statusCode)
+                .body(body);
+
+        return response;
+    }
 }
