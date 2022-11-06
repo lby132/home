@@ -78,3 +78,6 @@ target
 secrets.yml
 .gradletasknamecache
 .sts4-cache
+
+# lby
+nodeenv-16
