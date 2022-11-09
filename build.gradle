@@ -99,6 +99,7 @@ asciidoctor.doFirst {
 }
 
 bootJar {
+
 	dependsOn asciidoctor
 
 	copy {
