@@ -19,6 +19,16 @@ public class PostController {
 
     private final PostService postService;
 
+    @GetMapping("/test")
+    public String test() {
+        return "hello";
+    }
+
+    @GetMapping("/foo")
+    public String foo() {
+        return "foo";
+    }
+
     @PostMapping("/posts")
     public void posts(@RequestBody @Valid PostCreate request) throws Exception {
         request.validate();

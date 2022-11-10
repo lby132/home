@@ -76,29 +76,29 @@ class PostControllerTest {
                 .andDo(MockMvcResultHandlers.print()); // 요청/응답 전체 메세지를 확인할수 있다.
     }	             // 참고로 MockMvcResultHandlers나 이런것들 static import가능해서 더 깔끔하게 쓸수있다. 공부용이라 그냥 남겨뒀다.
 
-//    @Test
-//    @DisplayName("/posts 요청시 title값은 필수다.")
-//    void test2() throws Exception {
-//
-//        final PostCreate request = PostCreate.builder()
-//                .content("내용입니다.")
-//                .build();
-//
-//        final String json = objectMapper.writeValueAsString(request);
-//
-//        mockMvc.perform(MockMvcRequestBuilders.post("/posts")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(json)
-//                )
-//                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("400"))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("잘못된 요청입니다."))
-//                .andExpect(MockMvcResultMatchers.jsonPath("$.validation.title").value("타이틀을 입력해주세요."))
-//                .andDo(MockMvcResultHandlers.print());
-//    }
+    @Test
+    @DisplayName("글 작성 요청시 title값은 필수다.")
+    void test2() throws Exception {
+
+        final PostCreate request = PostCreate.builder()
+                .content("내용입니다.")
+                .build();
+
+        final String json = objectMapper.writeValueAsString(request);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("400"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("잘못된 요청입니다."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.validation.title").value("타이틀을 입력해주세요."))
+                .andDo(MockMvcResultHandlers.print());
+    }
 
     @Test
-    @DisplayName("/posts 요청시 DB에 값이 저장된다.")
+    @DisplayName("글 작성 요청시 DB에 값이 저장된다.")
     void test3() throws Exception {
 
         final PostCreate request = PostCreate.builder()
@@ -109,6 +109,7 @@ class PostControllerTest {
         final String json = objectMapper.writeValueAsString(request);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/posts")
+                                .header("authorization", "lby")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json)
                         //   .content("{\"title\": \"제목입니다.\", \"content\": \"내용입니다.\"}")
