@@ -1,5 +1,6 @@
 package com.lby.home.controller;
 
+import com.lby.home.config.data.UserSession;
 import com.lby.home.request.PostCreate;
 import com.lby.home.request.PostEdit;
 import com.lby.home.request.PostSearch;
@@ -19,13 +20,9 @@ public class PostController {
 
     private final PostService postService;
 
-    @GetMapping("/test")
-    public String test() {
-        return "hello";
-    }
-
     @GetMapping("/foo")
-    public String foo() {
+    public String foo(UserSession userSession) {
+        log.info(">>>{}", userSession.name);
         return "foo";
     }
 
