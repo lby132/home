@@ -42,7 +42,6 @@ public class exController {
     // 클라이언트에 어떤 오류인지 메세지로 내려줌
     //@PostMapping("/posts")
     public Map<String, String> post3(@RequestBody @Valid PostCreate param, BindingResult result) throws Exception {
-        System.out.println("param = " + param);
         if (result.hasErrors()) {
             final List<FieldError> fieldErrors = result.getFieldErrors();
             final FieldError firstFieldError = fieldErrors.get(0);
