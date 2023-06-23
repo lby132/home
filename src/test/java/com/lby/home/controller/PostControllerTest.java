@@ -46,6 +46,7 @@ class PostControllerTest {
         // 테스트 하나 실행하고 지우고 하나실행하고 지우기 위해 추가함.
     void clean() {
         postRepository.deleteAll();
+
     }
 
     @Test
